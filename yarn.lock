@@ -5016,6 +5016,11 @@ react-native-screens@^2.9.0:
   resolved "https://registry.yarnpkg.com/react-native-screens/-/react-native-screens-2.9.0.tgz#ead2843107ba00fee259aa377582e457c74f1f3b"
   integrity sha512-5MaiUD6HA3nzY3JbVI8l3V7pKedtxQF3d8qktTVI0WmWXTI4QzqOU8r8fPVvfKo3MhOXwhWBjr+kQ7DZaIQQeg==
 
+react-native-wifi-reborn@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/react-native-wifi-reborn/-/react-native-wifi-reborn-4.2.0.tgz#6e55236329218fc01bd790fccca4cdd8929105ed"
+  integrity sha512-VNjNLMiDV/bHLbycyE9a2DnlygrQcSr1E0hUUF0SIMG+6OOzXhgm7yytOLLZ7mC28669rEfjtJrjHc0Z2Zh0rw==
+
 react-native@0.62.2:
   version "0.62.2"
   resolved "https://registry.yarnpkg.com/react-native/-/react-native-0.62.2.tgz#d831e11a3178705449142df19a70ac2ca16bad10"
