@@ -1,13 +1,27 @@
 import React from 'react';
-import {View, Text, Button, StyleSheet, FlatList} from 'react-native';
+import {
+  View,
+  Text,
+  Button,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
 import WifiManager from 'react-native-wifi-reborn';
-import {SSID_PREFIX} from '../../constants/App';
+import {SSID_PREFIX, SCANNING_TEXT, CONNECT_TEXT} from '../../constants/App';
+import {VENT_INSTALL} from '../../constants/Navigation';
+
+const {height} = Dimensions.get('window');
 
 const Item = (props) => {
   return (
-    <View>
-      <Text>{props.title}</Text>
-    </View>
+    <TouchableOpacity onPress={props.onPress} style={styles.item}>
+      <View>
+        <Text style={styles.itemText}>{props.title}</Text>
+      </View>
+    </TouchableOpacity>
   );
 };
 
@@ -18,6 +32,8 @@ class VentSelect extends React.Component {
     this.state = {
       wifi: null,
       currentWifi: null,
+      indicator: true,
+      activity: SCANNING_TEXT,
     };
   }
 
@@ -28,50 +44,118 @@ class VentSelect extends React.Component {
   loadWifiList() {
     WifiManager.reScanAndLoadWifiList()
       .then((result) => JSON.parse(result))
-      .then((data) => this.setState({wifi: data}))
-      .catch(() => this.setState({wifi: []}));
+      .then((data) =>
+        this.setState({wifi: data, indicator: false, activity: null}),
+      )
+      // TODO better error handling
+      .catch(() => this.setState({wifi: [], indicator: false}));
+  }
+
+  activityIndicator() {
+    if (this.state.indicator === false) {
+      return null;
+    }
+
+    return (
+      <View style={styles.indicator}>
+        <ActivityIndicator size={80} color={'blue'} />
+        <Text style={styles.indicatorText}>{this.state.activity}</Text>
+      </View>
+    );
+  }
+
+  connect(index) {
+    WifiManager.connectToProtectedSSID(this.state.wifi[index].SSID, '', false)
+      .then(() => this.props.navigation.navigate(VENT_INSTALL))
+      .catch((e) => console.error(e));
   }
 
   render() {
-    console.log(this.state);
-
+    console.log(this.props);
     return (
       <>
-        <View style={{height: '80%'}}>
+        <View style={styles.wrapper}>
           <View>
             <Text style={styles.headline}>Vent Select</Text>
           </View>
+
+          {this.activityIndicator()}
           <FlatList
+            style={{
+              display: this.state.activity === CONNECT_TEXT ? 'none' : 'flex',
+            }}
             data={this.state.wifi}
-            renderItem={({item, index}) => <Item title={item.SSID} />}
+            renderItem={({item, index}) => (
+              <Item
+                title={item.SSID}
+                onPress={() => {
+                  this.setState({indicator: true, activity: CONNECT_TEXT});
+                  this.connect(index);
+                }}
+              />
+            )}
             keyExtractor={(item) => item.BSSID}
           />
+          <View style={styles.rescan}>
+            <Button
+              title="Rescan Networks"
+              disabled={this.state.wifi === null}
+              onPress={() => {
+                this.setState({
+                  wifi: null,
+                  indicator: true,
+                  activity: SCANNING_TEXT,
+                });
+                this.loadWifiList();
+              }}
+            />
+          </View>
         </View>
-        <Button
-          title="Rescan Networks"
-          style={styles.rescan}
-          disabled={this.state.wifi === null}
-          onPress={() => {
-            this.setState({wifi: null});
-            this.loadWifiList();
-          }}
-        />
       </>
     );
   }
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    height: height,
+    position: 'relative',
+  },
   rescan: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 30,
+    zIndex: 2,
     left: 0,
-    color: 'green',
+    right: 0,
+    paddingLeft: 5,
+    paddingRight: 5,
+  },
+  indicator: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: 200,
+    height: 120,
+    transform: [{translateY: -60}, {translateX: -100}],
+  },
+  indicatorText: {
+    textAlign: 'center',
+  },
+  headline: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 
-  headline: {
+  item: {
+    height: 50,
+    paddingLeft: 10,
+    borderBottomWidth: 1,
+  },
+  itemText: {
+    lineHeight: 50,
     fontSize: 16,
-    fontWeight: 'bold',
+    textAlignVertical: 'center',
   },
 });
 
