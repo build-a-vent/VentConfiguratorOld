@@ -19,15 +19,15 @@ class ConfigWizard extends React.Component {
     super(props);
     this.state = {
       step: 0,
-      name: '',
-      ventName: true,
-      airFlow: null,
       backdrop: false,
-      o2Flow: null,
-      airFlowInterval: null,
-      o2FlowInterval: null,
-      ssid: null,
-      password: null,
+      ventName: true,
+      name: '',
+      airFlow: '',
+      o2Flow: '',
+      airFlowInterval: '',
+      o2FlowInterval: '',
+      ssid: '',
+      password: '',
     };
   }
 

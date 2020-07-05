@@ -53,7 +53,6 @@ class VentSelect extends React.Component {
       .then((data) =>
         this.setState({wifi: data, indicator: false, activity: null}),
       )
-      // TODO better error handling
       .catch(() => this.setState({wifi: [], indicator: false}));
   }
 
@@ -76,7 +75,10 @@ class VentSelect extends React.Component {
   connect(index) {
     WifiManager.connectToProtectedSSID(this.state.wifi[index].SSID, '', false)
       .then(() => this.props.navigation.navigate(VENT_INSTALL))
-      .catch((e) => console.error(e));
+      .catch((err) => {
+        console.log(err);
+        this.loadWifiList();
+      });
   }
 
   render() {
