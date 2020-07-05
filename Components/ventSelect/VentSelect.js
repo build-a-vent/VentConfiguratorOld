@@ -10,7 +10,13 @@ import {
   Dimensions,
 } from 'react-native';
 import WifiManager from 'react-native-wifi-reborn';
-import {SSID_PREFIX, SCANNING_TEXT, CONNECT_TEXT} from '../../constants/App';
+import {
+  SSID_PREFIX,
+  SCANNING_TEXT,
+  CONNECT_TEXT,
+  ACTIVITY_INICATOR_LAGRE,
+  ACTIVITY_INDICATOR_COLOR,
+} from '../../constants/App';
 import {VENT_INSTALL} from '../../constants/Navigation';
 
 const {height} = Dimensions.get('window');
@@ -58,7 +64,10 @@ class VentSelect extends React.Component {
 
     return (
       <View style={styles.indicator}>
-        <ActivityIndicator size={80} color={'blue'} />
+        <ActivityIndicator
+          size={ACTIVITY_INICATOR_LAGRE}
+          color={ACTIVITY_INDICATOR_COLOR}
+        />
         <Text style={styles.indicatorText}>{this.state.activity}</Text>
       </View>
     );
@@ -89,7 +98,11 @@ class VentSelect extends React.Component {
               <Item
                 title={item.SSID}
                 onPress={() => {
-                  this.setState({indicator: true, activity: CONNECT_TEXT});
+                  this.setState({
+                    indicator: true,
+                    activity: CONNECT_TEXT,
+                    wifi: null,
+                  });
                   this.connect(index);
                 }}
               />
