@@ -81,10 +81,17 @@ class VentSelect extends React.Component {
       });
   }
 
+  getVentNetwoks() {
+    if (!this.state.wifi) {
+      return null;
+    }
+
+    return [this.state.wifi.find((wifi) => wifi.SSID.startsWith(SSID_PREFIX))];
+  }
+
   render() {
-    console.log(this.props);
     return (
-      <>
+      <React.Fragment>
         <View style={styles.wrapper}>
           <View>
             <Text style={styles.headline}>Vent Select</Text>
@@ -95,7 +102,7 @@ class VentSelect extends React.Component {
             style={{
               display: this.state.activity === CONNECT_TEXT ? 'none' : 'flex',
             }}
-            data={this.state.wifi}
+            data={this.getVentNetwoks()}
             renderItem={({item, index}) => (
               <Item
                 title={item.SSID}
@@ -126,7 +133,7 @@ class VentSelect extends React.Component {
             />
           </View>
         </View>
-      </>
+      </React.Fragment>
     );
   }
 }
