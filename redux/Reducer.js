@@ -1,5 +1,11 @@
 import {SET_STORED_WIFI} from './actions/Storage';
-import {VENT_DATA, VENT_CONFIG_MODE, VENT_IS_TESTING} from './actions/Vent';
+import {
+  VENT_DATA,
+  VENT_CONFIG_MODE,
+  VENT_IS_TESTING,
+  VENT_IS_SAVED,
+} from './actions/Vent';
+import {SET_CURRENT_WIFI} from './actions/Wifi';
 
 const initialState = {
   wifi: null,
@@ -10,6 +16,8 @@ const initialState = {
   isConfigMode: false,
   isTesting: false,
   isSaved: false,
+  currentWifi: null,
+  configWifi: null,
 };
 
 const Reducer = (state = initialState, action) => {
@@ -31,12 +39,23 @@ const Reducer = (state = initialState, action) => {
       return {
         ...state,
         isSaved: false,
+        isTesting: false,
         isConfigMode: action.mode,
       };
     case VENT_IS_TESTING:
       return {
         ...state,
         isTesting: action.state,
+      };
+    case SET_CURRENT_WIFI:
+      return {
+        ...state,
+        currentWifi: action.ssid,
+      };
+    case VENT_IS_SAVED:
+      return {
+        ...state,
+        isSaved: true,
       };
     default:
       return {

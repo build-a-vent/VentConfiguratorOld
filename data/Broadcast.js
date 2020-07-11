@@ -63,6 +63,8 @@ class Broadcaster {
       socketPort,
       this.broadcast,
       (err) => {
+        // TODO send status to app for network reconnect
+        //{message: "sendto failed: ENETUNREACH (Network is unreachable)"}
         console.log(err);
       },
     );
@@ -81,7 +83,6 @@ class Broadcaster {
     this.sendToVent(sendData, data.ip);
 
     setTimeout(() => {
-      console.warn('----- REMOVE ME ---------------');
       store.dispatch(setVentSaved());
       this.request = true;
     }, 2000);
@@ -138,7 +139,7 @@ class Broadcaster {
   receive(msg, rinfo) {
     const data = JSON.parse(msg.toString());
     const cmd = data.cmd;
-
+    console.log(data);
     switch (cmd) {
       case SCAN_CMD:
         return;

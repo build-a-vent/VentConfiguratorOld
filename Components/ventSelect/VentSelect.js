@@ -5,20 +5,16 @@ import {
   Button,
   StyleSheet,
   FlatList,
-  ActivityIndicator,
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
 import WifiManager from 'react-native-wifi-reborn';
-import {
-  SSID_PREFIX,
-  SCANNING_TEXT,
-  CONNECT_TEXT,
-  ACTIVITY_INDICATOR_LAGRE,
-  ACTIVITY_INDICATOR_COLOR,
-} from '../../constants/App';
+import {SSID_PREFIX, SCANNING_TEXT, CONNECT_TEXT} from '../../constants/App';
 import {VENT_INSTALL} from '../../constants/Navigation';
 import Backdrop from '../Backdrop/Backdrop';
+import {connect} from 'react-redux';
+import {setCurrentWifi, setConfigWifi} from '../../redux/actions/Wifi';
+import {bindActionCreators} from 'redux';
 
 const {height} = Dimensions.get('window');
 
@@ -46,6 +42,11 @@ class VentSelect extends React.Component {
 
   componentDidMount() {
     this.loadWifiList();
+    if (this.props.currentWifi === null) {
+      WifiManager.getCurrentWifiSSID().then((ssid) =>
+        this.props.setCurrentWifi(ssid),
+      );
+    }
   }
 
   loadWifiList() {
@@ -61,7 +62,6 @@ class VentSelect extends React.Component {
     WifiManager.connectToProtectedSSID(this.state.wifi[index].SSID, '', false)
       .then(() => this.props.navigation.navigate(VENT_INSTALL))
       .catch((err) => {
-        console.log(err);
         this.loadWifiList();
       });
   }
@@ -165,4 +165,17 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VentSelect;
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      setCurrentWifi,
+      setConfigWifi,
+    },
+    dispatch,
+  );
+
+const mapStateToProps = (state) => ({
+  currentWifi: state.currentWifi,
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(VentSelect);

@@ -12,9 +12,10 @@ import {
 } from '../../constants/App';
 import NetworkSetup from './NetworkSetup';
 import Finish from './Finish';
-import {VENT_SELECT_PAGE} from '../../constants/Navigation';
+import {VENT_SELECT_PAGE, INDEX_PAGE} from '../../constants/Navigation';
 import broadcast from '../../data/Broadcast';
 import {connect} from 'react-redux';
+import WifiManager from 'react-native-wifi-reborn';
 
 class ConfigWizard extends React.Component {
   constructor(props) {
@@ -33,7 +34,7 @@ class ConfigWizard extends React.Component {
   }
 
   componentDidMount() {
-    broadcast.sendBroadcast();
+    setTimeout(() => broadcast.sendBroadcast(), 300);
   }
 
   componentDidUpdate() {
@@ -41,8 +42,9 @@ class ConfigWizard extends React.Component {
       broadcast.switchConfigMode();
     }
 
+    console.log('didUpdate', this.props.isSaved);
     if (this.props.isSaved === true) {
-      this.props.navigation.navigate(VENT_SELECT_PAGE);
+      this.props.navigation.navigate(INDEX_PAGE);
     }
   }
 
@@ -227,6 +229,7 @@ const mapStateToProps = (state) => ({
   isConnected: state.isConnected,
   isTesting: state.isTesting,
   isSaved: state.isSaved,
+  currentWifi: state.currentWifi,
 });
 
 export default connect(mapStateToProps)(ConfigWizard);

@@ -18,7 +18,6 @@ const Backdrop = (props) => {
     return null;
   }
 
-  console.log('backdrop');
   return (
     <View style={styles.backdrop}>
       <View style={styles.indicator}>
