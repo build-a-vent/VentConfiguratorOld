@@ -27,6 +27,7 @@ import {Provider} from 'react-redux';
 import Store from './redux/Store';
 import VentSelect from './Components/ventSelect/VentSelect';
 import ConfigWizard from './Components/configuration/Wizard';
+import './data/Broadcast';
 
 const Stack = createStackNavigator();
 

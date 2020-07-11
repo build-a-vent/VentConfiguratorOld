@@ -56,8 +56,18 @@ to stop the vent and move to config mode send:
 
 ```
 {
- cmd:configmode,
- mac:xxxxx
+ cmd: configmode,
+ mac: xxxxx
+}
+
+```
+
+answer:
+
+```
+
+{
+    cmd: configuring,
 }
 
 ```
@@ -67,10 +77,20 @@ to stop the vent and move to config mode send:
 ### To activate the test on the vent send:
 
 ```
+
  {
-  cmd:valvecfg,
-  mac:xxxxxx,
-  action:[airone,o2one,airten,o2ten]
+  cmd: valvecfg,
+  mac: xxxxxx,
+  action: [airone,o2one,airten,o2ten]
+}
+
+```
+
+answer:
+
+```
+ {
+  cmd: valvecfgdone,
 }
 
 ```
@@ -80,18 +100,16 @@ to stop the vent and move to config mode send:
 ```
 
 {
-    cmd: config
-    mac: mac
-    ventname: name
-    seq: <seqnr>
-    c_flair: airFlow
-    c_flo2: o2Flow
-    c_intair: airFlowInterval
-    c_int2t: o2FlowInterval
-    ssid: ssid
-    password: password
+cmd: config
+mac: mac
+ventname: name
+c_flair: airFlow
+c_flo2: o2Flow
+c_intair: airFlowInterval
+c_int2t: o2FlowInterval
+ssid: ssid
+password: password
 }
-
 
 ```
 
@@ -100,10 +118,14 @@ to stop the vent and move to config mode send:
 ```
 
 {
-    cmd: cfgack
-    req: config
-    seq: seqnr
-    mac: mac
+cmd: cfgack
+req: config
+seq: seqnr
+mac: mac
 }
+
+```
+
+```
 
 ```

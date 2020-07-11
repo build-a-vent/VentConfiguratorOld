@@ -14,10 +14,11 @@ import {
   SSID_PREFIX,
   SCANNING_TEXT,
   CONNECT_TEXT,
-  ACTIVITY_INICATOR_LAGRE,
+  ACTIVITY_INDICATOR_LAGRE,
   ACTIVITY_INDICATOR_COLOR,
 } from '../../constants/App';
 import {VENT_INSTALL} from '../../constants/Navigation';
+import Backdrop from '../Backdrop/Backdrop';
 
 const {height} = Dimensions.get('window');
 
@@ -56,22 +57,6 @@ class VentSelect extends React.Component {
       .catch(() => this.setState({wifi: [], indicator: false}));
   }
 
-  activityIndicator() {
-    if (this.state.indicator === false) {
-      return null;
-    }
-
-    return (
-      <View style={styles.indicator}>
-        <ActivityIndicator
-          size={ACTIVITY_INICATOR_LAGRE}
-          color={ACTIVITY_INDICATOR_COLOR}
-        />
-        <Text style={styles.indicatorText}>{this.state.activity}</Text>
-      </View>
-    );
-  }
-
   connect(index) {
     WifiManager.connectToProtectedSSID(this.state.wifi[index].SSID, '', false)
       .then(() => this.props.navigation.navigate(VENT_INSTALL))
@@ -92,12 +77,11 @@ class VentSelect extends React.Component {
   render() {
     return (
       <React.Fragment>
+        <Backdrop isOpen={this.state.indicator} text={this.state.activity} />
         <View style={styles.wrapper}>
           <View>
             <Text style={styles.headline}>Vent Select</Text>
           </View>
-
-          {this.activityIndicator()}
           <FlatList
             style={{
               display: this.state.activity === CONNECT_TEXT ? 'none' : 'flex',
