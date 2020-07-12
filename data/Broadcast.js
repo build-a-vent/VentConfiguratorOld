@@ -36,11 +36,16 @@ class Broadcaster {
     this.getInterfaceIp().getInterfaceNet();
   }
 
+  reinit() {
+    this.getInterfaceIp()
+      .getInterfaceNet()
+      .calculateBroadcast()
+      .sendBroadcast();
+  }
+
   init() {
     this.calculateBroadcast();
-    this.socket.once('listening', () => {
-      console.log('---- BROADCAST IS READY ----');
-    });
+    this.socket.once('listening', () => {});
 
     this.socket.on('message', this.receive.bind(this));
     this.socket.bind(socketPort);
