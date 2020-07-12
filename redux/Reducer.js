@@ -5,10 +5,15 @@ import {
   VENT_IS_TESTING,
   VENT_IS_SAVED,
 } from './actions/Vent';
-import {SET_CURRENT_WIFI} from './actions/Wifi';
+import {
+  SET_CURRENT_WIFI,
+  SET_DEFAULT_WIFI,
+  STAY_CURRENT_WIFI,
+} from './actions/Wifi';
 
 const initialState = {
-  wifi: null,
+  storedWifi: [],
+  defaultWifi: null,
   mac: null,
   ip: null,
   name: null,
@@ -18,16 +23,20 @@ const initialState = {
   isSaved: false,
   currentWifi: null,
   configWifi: null,
+  stayCurrent: false,
+  broadcastInit: false,
 };
 
 const Reducer = (state = initialState, action) => {
   const type = action.type;
-  console.log(action);
+  console.log('reducer ===>', action);
   switch (type) {
     case SET_STORED_WIFI:
+      const storedWifi = [...state.storedWifi];
+      storedWifi.push(action.data);
       return {
         ...state,
-        wifi: action.wifi,
+        storedWifi,
       };
 
     case VENT_DATA:
@@ -56,6 +65,16 @@ const Reducer = (state = initialState, action) => {
       return {
         ...state,
         isSaved: true,
+      };
+    case SET_DEFAULT_WIFI:
+      return {
+        ...state,
+        defaultWifi: action.ssid,
+      };
+    case STAY_CURRENT_WIFI:
+      return {
+        ...state,
+        stayCurrent: true,
       };
     default:
       return {

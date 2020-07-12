@@ -1,5 +1,12 @@
 import React from 'react';
-import {Text, StyleSheet, View, Button, Keyboard} from 'react-native';
+import {
+  Text,
+  StyleSheet,
+  View,
+  Button,
+  Keyboard,
+  KeyboardAvoidingView,
+} from 'react-native';
 import NameInput from './Name';
 import FlowAdjust from './FlowAdjust';
 import Backdrop from '../Backdrop/Backdrop';
@@ -16,6 +23,7 @@ import {VENT_SELECT_PAGE, INDEX_PAGE} from '../../constants/Navigation';
 import broadcast from '../../data/Broadcast';
 import {connect} from 'react-redux';
 import WifiManager from 'react-native-wifi-reborn';
+import {ScrollView} from 'react-native-gesture-handler';
 
 class ConfigWizard extends React.Component {
   constructor(props) {
@@ -30,11 +38,13 @@ class ConfigWizard extends React.Component {
       o2FlowInterval: '',
       ssid: '',
       password: '',
+      storeWifi: false,
+      wifiIndex: -1,
     };
   }
 
   componentDidMount() {
-    setTimeout(() => broadcast.sendBroadcast(), 300);
+    setTimeout(() => broadcast.reinit(), 600);
   }
 
   componentDidUpdate() {
@@ -42,7 +52,6 @@ class ConfigWizard extends React.Component {
       broadcast.switchConfigMode();
     }
 
-    console.log('didUpdate', this.props.isSaved);
     if (this.props.isSaved === true) {
       this.props.navigation.navigate(INDEX_PAGE);
     }
@@ -67,24 +76,6 @@ class ConfigWizard extends React.Component {
     });
   }
 
-  nameSaveButton() {
-    if (this.state.step !== 0) {
-      return null;
-    }
-    return (
-      <Button
-        title="Set name"
-        disabled={
-          this.state.name.length < 5 || this.state.name === false ? true : false
-        }
-        style={{
-          display: this.state.ventName === true ? 'flex' : 'none',
-        }}
-        onPress={() => this.setState({ventName: false, step: 1})}
-      />
-    );
-  }
-
   render() {
     if (this.props.isConnected === false || this.props.isConfigMode === false) {
       return (
@@ -98,98 +89,114 @@ class ConfigWizard extends React.Component {
         />
       );
     }
+
     return (
-      <View style={styles.wrapper}>
-        <Backdrop isOpen={this.props.isTesting === true} />
-        <Text style={styles.headline}>Vent Setup</Text>
-        <NameInput
-          defaultValue={this.props.name}
-          value={this.state.name}
-          editable={this.state.step === 0}
-          onChange={(val) => this.setState({name: val})}
-        />
-        {this.nameSaveButton()}
-        <FlowAdjust
-          title="Actual Flow Air"
-          step={this.state.step}
-          value={this.state.airFlow}
-          active={1}
-          editable={this.state.step === 1}
-          onChange={(value) => this.setState({airFlow: Number(value)})}
-          actionButton={{
-            title: 'Air/1s',
-            onPress: () => this.sendVentTestCmd(AIR_FLOW_KEY),
-          }}
-          onSave={() => this.setState({step: 2})}
-          minValue={AIR_FLOW_MIN}
-          maxValue={AIR_FLOW_MAX}
-        />
+      <KeyboardAvoidingView>
+        <ScrollView>
+          <View style={styles.wrapper}>
+            <Backdrop isOpen={this.props.isTesting === true} />
+            <Text style={styles.headline}>Vent Setup</Text>
+            <NameInput
+              defaultValue={this.props.name}
+              value={this.state.name}
+              editable={this.state.step === 0}
+              onChange={(val) => this.setState({name: val})}
+              onPress={() => this.setState({ventName: false, step: 1})}
+            />
 
-        <FlowAdjust
-          title="Actual Flow O2"
-          step={this.state.step}
-          value={this.state.o2Flow}
-          active={2}
-          editable={this.state.step === 2}
-          onChange={(value) => this.setState({o2Flow: Number(value)})}
-          actionButton={{
-            title: 'O2/1s',
-            onPress: () => this.sendVentTestCmd(O2_FLOW_KEY),
-          }}
-          onSave={() => this.setState({step: 3})}
-          minValue={AIR_FLOW_MIN}
-          maxValue={AIR_FLOW_MAX}
-        />
+            <FlowAdjust
+              title="Actual Flow Air"
+              step={this.state.step}
+              value={this.state.airFlow}
+              active={1}
+              editable={this.state.step === 1}
+              onChange={(value) => this.setState({airFlow: Number(value)})}
+              actionButton={{
+                title: 'Air/1s',
+                onPress: () => this.sendVentTestCmd(AIR_FLOW_KEY),
+              }}
+              onSave={() => this.setState({step: 2})}
+              minValue={AIR_FLOW_MIN}
+              maxValue={AIR_FLOW_MAX}
+            />
 
-        <FlowAdjust
-          title="Actual Air/10x"
-          step={this.state.step}
-          value={this.state.airFlowInterval}
-          active={3}
-          editable={this.state.step === 3}
-          onChange={(value) => this.setState({airFlowInterval: Number(value)})}
-          actionButton={{
-            title: 'Air/10x',
-            onPress: () => this.sendVentTestCmd(AIR_TEN_TIMES_FLOW_KEY),
-          }}
-          onSave={() => this.setState({step: 4})}
-          minValue={AIR_FLOW_MIN}
-          maxValue={AIR_FLOW_MAX}
-        />
+            <FlowAdjust
+              title="Actual Flow O2"
+              step={this.state.step}
+              value={this.state.o2Flow}
+              active={2}
+              editable={this.state.step === 2}
+              onChange={(value) => this.setState({o2Flow: Number(value)})}
+              actionButton={{
+                title: 'O2/1s',
+                onPress: () => this.sendVentTestCmd(O2_FLOW_KEY),
+              }}
+              onSave={() => this.setState({step: 3})}
+              minValue={AIR_FLOW_MIN}
+              maxValue={AIR_FLOW_MAX}
+            />
 
-        <FlowAdjust
-          title="Actual Flow O2/10x"
-          step={this.state.step}
-          value={this.state.o2FlowInterval}
-          active={4}
-          editable={this.state.step === 4}
-          onChange={(value) => this.setState({o2FlowInterval: Number(value)})}
-          actionButton={{
-            title: 'O2/10x',
-            onPress: () => this.sendVentTestCmd(AIR_TEN_TIMES_FLOW_KEY),
-          }}
-          onSave={() => this.setState({step: 5})}
-          minValue={AIR_FLOW_MIN}
-          maxValue={AIR_FLOW_MAX}
-        />
+            <FlowAdjust
+              title="Actual Air/10x"
+              step={this.state.step}
+              value={this.state.airFlowInterval}
+              active={3}
+              editable={this.state.step === 3}
+              onChange={(value) =>
+                this.setState({airFlowInterval: Number(value)})
+              }
+              actionButton={{
+                title: 'Air/10x',
+                onPress: () => this.sendVentTestCmd(AIR_TEN_TIMES_FLOW_KEY),
+              }}
+              onSave={() => this.setState({step: 4})}
+              minValue={AIR_FLOW_MIN}
+              maxValue={AIR_FLOW_MAX}
+            />
 
-        <NetworkSetup
-          active={5}
-          step={this.state.step}
-          editable={this.state.step === 5}
-          ssid={this.state.ssid}
-          password={this.state.password}
-          onSsidChange={(text) => this.setState({ssid: text})}
-          onPasswordChange={(text) => this.setState({password: text})}
-          onSave={() => this.setState({step: 6})}
-        />
+            <FlowAdjust
+              title="Actual Flow O2/10x"
+              step={this.state.step}
+              value={this.state.o2FlowInterval}
+              active={4}
+              editable={this.state.step === 4}
+              onChange={(value) =>
+                this.setState({o2FlowInterval: Number(value)})
+              }
+              actionButton={{
+                title: 'O2/10x',
+                onPress: () => this.sendVentTestCmd(AIR_TEN_TIMES_FLOW_KEY),
+              }}
+              onSave={() => this.setState({step: 5})}
+              minValue={AIR_FLOW_MIN}
+              maxValue={AIR_FLOW_MAX}
+            />
 
-        <Finish
-          active={6}
-          step={this.state.step}
-          onPress={() => this.updateVent()}
-        />
-      </View>
+            <NetworkSetup
+              active={5}
+              step={this.state.step}
+              editable={this.state.step === 5}
+              ssid={this.state.ssid}
+              storeWifi={this.state.storeWifi}
+              wifiIndex={this.state.wifiIndex}
+              onStoreChange={() =>
+                this.setState({storeWifi: !this.state.storeWifi})
+              }
+              password={this.state.password}
+              onSsidChange={(text) => this.setState({ssid: text})}
+              onPasswordChange={(text) => this.setState({password: text})}
+              onWifiSelect={(index) => this.setState({wifiIndex: index})}
+              onSave={() => this.setState({step: 6})}
+            />
+
+            <Finish
+              active={6}
+              step={this.state.step}
+              onPress={() => this.updateVent()}
+            />
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     );
   }
 }

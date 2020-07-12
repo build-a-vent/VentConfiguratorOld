@@ -6,6 +6,7 @@ import * as RootNavigation from '../../RootNavigation';
 import {VENT_SELECT_PAGE} from '../../constants/Navigation';
 
 let displayed = false;
+let permission;
 
 function getPermissions(setIsVisible) {
   displayed = true;
@@ -19,13 +20,19 @@ function getPermissions(setIsVisible) {
       buttonNegative: 'DENY',
       buttonPositive: 'ALLOW',
     },
-  ).then((granted) => {
-    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-      RootNavigation.navigate(VENT_SELECT_PAGE);
-    } else {
-      setIsVisible(true);
-    }
-  });
+  )
+    .then((granted) => {
+      permission = granted;
+      console.log('permission is ===>', granted);
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        RootNavigation.navigate(VENT_SELECT_PAGE);
+      } else {
+        setIsVisible(false);
+      }
+    })
+    .catch((e) => {
+      console.log('permission error ===>', e);
+    });
 }
 
 function grantButton(cb) {
@@ -38,6 +45,11 @@ const IndexView = (props) => {
   if (displayed === false) {
     getPermissions(cb);
   }
+
+  if (permission === PermissionsAndroid.RESULTS.GRANTED) {
+    RootNavigation.navigate(VENT_SELECT_PAGE);
+  }
+
   return (
     <View key="index-view" style={styles.wrapper}>
       <Text>We need access to your wifi connection</Text>

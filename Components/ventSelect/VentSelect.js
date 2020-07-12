@@ -15,6 +15,7 @@ import Backdrop from '../Backdrop/Backdrop';
 import {connect} from 'react-redux';
 import {setCurrentWifi, setConfigWifi} from '../../redux/actions/Wifi';
 import {bindActionCreators} from 'redux';
+import DefaultModal from '../Network/DefaultModal';
 
 const {height} = Dimensions.get('window');
 
@@ -59,11 +60,16 @@ class VentSelect extends React.Component {
   }
 
   connect(index) {
-    WifiManager.connectToProtectedSSID(this.state.wifi[index].SSID, '', false)
-      .then(() => this.props.navigation.navigate(VENT_INSTALL))
-      .catch((err) => {
-        this.loadWifiList();
-      });
+    WifiManager.connectToProtectedSSID(
+      this.state.wifi[index].SSID,
+      '',
+      false,
+    ).then(
+      () => this.props.navigation.navigate(VENT_INSTALL),
+      () => {
+        console.log('Connection failed!');
+      },
+    );
   }
 
   getVentNetwoks() {
@@ -78,6 +84,7 @@ class VentSelect extends React.Component {
     return (
       <React.Fragment>
         <Backdrop isOpen={this.state.indicator} text={this.state.activity} />
+        <DefaultModal />
         <View style={styles.wrapper}>
           <View>
             <Text style={styles.headline}>Vent Select</Text>
@@ -176,6 +183,7 @@ const mapDispatchToProps = (dispatch) =>
 
 const mapStateToProps = (state) => ({
   currentWifi: state.currentWifi,
+  configWifi: state.configWifi,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(VentSelect);
