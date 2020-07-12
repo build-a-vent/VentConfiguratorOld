@@ -7,7 +7,7 @@ import {
   Dimensions,
 } from 'react-native';
 import {
-  ACTIVITY_INICATOR_LAGRE,
+  ACTIVITY_INDICATOR_LAGRE,
   ACTIVITY_INDICATOR_COLOR,
 } from '../../constants/App';
 
@@ -18,14 +18,14 @@ const Backdrop = (props) => {
     return null;
   }
 
-  console.log('backdrop');
   return (
     <View style={styles.backdrop}>
-      <View style={styles.wrapper}>
+      <View style={styles.indicator}>
         <ActivityIndicator
-          size={ACTIVITY_INICATOR_LAGRE}
+          size={ACTIVITY_INDICATOR_LAGRE}
           color={ACTIVITY_INDICATOR_COLOR}
         />
+        <Text style={styles.indicatorText}>{props?.text}</Text>
       </View>
     </View>
   );
@@ -38,16 +38,20 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     top: 0,
-    backgroundColor: 'rgba(214, 214, 194, .7)',
+    backgroundColor: 'rgba(33,37,41, .4)',
     zIndex: 9999999,
   },
-  wrapper: {
-    width: ACTIVITY_INICATOR_LAGRE,
-    height: ACTIVITY_INICATOR_LAGRE,
+  indicator: {
     position: 'absolute',
-    left: width / 2 - ACTIVITY_INICATOR_LAGRE / 2,
-    top: height / 2 - ACTIVITY_INICATOR_LAGRE / 2,
-    zIndex: 99,
+    top: '50%',
+    left: '50%',
+    width: 300,
+    height: 120,
+    transform: [{translateY: -60}, {translateX: -150}],
+    zIndex: 2,
+  },
+  indicatorText: {
+    textAlign: 'center',
   },
 });
 

@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  Linking,
-  Image,
-  Button,
-} from 'react-native';
+import {View, Text, StyleSheet, TextInput, Button} from 'react-native';
 import {configStyles} from './styles';
 
 const FlowAdjust = (props) => {

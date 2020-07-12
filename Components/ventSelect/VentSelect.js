@@ -5,19 +5,16 @@ import {
   Button,
   StyleSheet,
   FlatList,
-  ActivityIndicator,
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
 import WifiManager from 'react-native-wifi-reborn';
-import {
-  SSID_PREFIX,
-  SCANNING_TEXT,
-  CONNECT_TEXT,
-  ACTIVITY_INICATOR_LAGRE,
-  ACTIVITY_INDICATOR_COLOR,
-} from '../../constants/App';
+import {SSID_PREFIX, SCANNING_TEXT, CONNECT_TEXT} from '../../constants/App';
 import {VENT_INSTALL} from '../../constants/Navigation';
+import Backdrop from '../Backdrop/Backdrop';
+import {connect} from 'react-redux';
+import {setCurrentWifi, setConfigWifi} from '../../redux/actions/Wifi';
+import {bindActionCreators} from 'redux';
 
 const {height} = Dimensions.get('window');
 
@@ -45,6 +42,11 @@ class VentSelect extends React.Component {
 
   componentDidMount() {
     this.loadWifiList();
+    if (this.props.currentWifi === null) {
+      WifiManager.getCurrentWifiSSID().then((ssid) =>
+        this.props.setCurrentWifi(ssid),
+      );
+    }
   }
 
   loadWifiList() {
@@ -56,46 +58,35 @@ class VentSelect extends React.Component {
       .catch(() => this.setState({wifi: [], indicator: false}));
   }
 
-  activityIndicator() {
-    if (this.state.indicator === false) {
-      return null;
-    }
-
-    return (
-      <View style={styles.indicator}>
-        <ActivityIndicator
-          size={ACTIVITY_INICATOR_LAGRE}
-          color={ACTIVITY_INDICATOR_COLOR}
-        />
-        <Text style={styles.indicatorText}>{this.state.activity}</Text>
-      </View>
-    );
-  }
-
   connect(index) {
     WifiManager.connectToProtectedSSID(this.state.wifi[index].SSID, '', false)
       .then(() => this.props.navigation.navigate(VENT_INSTALL))
       .catch((err) => {
-        console.log(err);
         this.loadWifiList();
       });
   }
 
+  getVentNetwoks() {
+    if (!this.state.wifi) {
+      return null;
+    }
+
+    return [this.state.wifi.find((wifi) => wifi.SSID.startsWith(SSID_PREFIX))];
+  }
+
   render() {
-    console.log(this.props);
     return (
-      <>
+      <React.Fragment>
+        <Backdrop isOpen={this.state.indicator} text={this.state.activity} />
         <View style={styles.wrapper}>
           <View>
             <Text style={styles.headline}>Vent Select</Text>
           </View>
-
-          {this.activityIndicator()}
           <FlatList
             style={{
               display: this.state.activity === CONNECT_TEXT ? 'none' : 'flex',
             }}
-            data={this.state.wifi}
+            data={this.getVentNetwoks()}
             renderItem={({item, index}) => (
               <Item
                 title={item.SSID}
@@ -126,7 +117,7 @@ class VentSelect extends React.Component {
             />
           </View>
         </View>
-      </>
+      </React.Fragment>
     );
   }
 }
@@ -174,4 +165,17 @@ const styles = StyleSheet.create({
   },
 });
 
-export default VentSelect;
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      setCurrentWifi,
+      setConfigWifi,
+    },
+    dispatch,
+  );
+
+const mapStateToProps = (state) => ({
+  currentWifi: state.currentWifi,
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(VentSelect);

@@ -15,6 +15,7 @@ const NameInput = (props) => {
         autoFocus={true}
         value={props.value}
         maxLength={MAX_NAME_LENGTH}
+        defaultValue={props.defaultValue}
         onChangeText={(text) => props.onChange(text)}
         editable={props.editable}
       />

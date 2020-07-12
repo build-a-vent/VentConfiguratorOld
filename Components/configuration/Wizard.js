@@ -2,7 +2,7 @@ import React from 'react';
 import {Text, StyleSheet, View, Button, Keyboard} from 'react-native';
 import NameInput from './Name';
 import FlowAdjust from './FlowAdjust';
-import Backdrop from './Backdrop';
+import Backdrop from '../Backdrop/Backdrop';
 import {
   AIR_FLOW_MIN,
   AIR_FLOW_MAX,
@@ -12,16 +12,18 @@ import {
 } from '../../constants/App';
 import NetworkSetup from './NetworkSetup';
 import Finish from './Finish';
-import {VENT_SELECT_PAGE} from '../../constants/Navigation';
+import {VENT_SELECT_PAGE, INDEX_PAGE} from '../../constants/Navigation';
+import broadcast from '../../data/Broadcast';
+import {connect} from 'react-redux';
+import WifiManager from 'react-native-wifi-reborn';
 
 class ConfigWizard extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       step: 0,
-      backdrop: false,
       ventName: true,
-      name: '',
+      name: false,
       airFlow: '',
       o2Flow: '',
       airFlowInterval: '',
@@ -31,18 +33,38 @@ class ConfigWizard extends React.Component {
     };
   }
 
-  airOneSecond() {
-    Keyboard.dismiss();
+  componentDidMount() {
+    setTimeout(() => broadcast.sendBroadcast(), 300);
+  }
 
-    this.setState({backdrop: true});
-    setTimeout(() => this.setState({backdrop: false}), 1000);
+  componentDidUpdate() {
+    if (this.props.isConnected === true && this.props.isConfigMode === false) {
+      broadcast.switchConfigMode();
+    }
+
+    console.log('didUpdate', this.props.isSaved);
+    if (this.props.isSaved === true) {
+      this.props.navigation.navigate(INDEX_PAGE);
+    }
+  }
+
+  sendVentTestCmd(test) {
+    Keyboard.dismiss();
+    broadcast.sendTest(test);
   }
 
   updateVent() {
     Keyboard.dismiss();
-    this.setState({backdrop: true});
 
-    setTimeout(() => this.props.navigation.navigate(VENT_SELECT_PAGE), 2000);
+    broadcast.saveVent({
+      ventname: this.state.name,
+      c_flair: this.state.airFlow,
+      c_flo2: this.state.o2Flow,
+      c_intair: this.state.airFlowInterval,
+      c_int2t: this.state.o2FlowInterval,
+      ssid: this.state.ssid,
+      password: this.state.password,
+    });
   }
 
   nameSaveButton() {
@@ -52,7 +74,9 @@ class ConfigWizard extends React.Component {
     return (
       <Button
         title="Set name"
-        disabled={this.state.name.length < 5}
+        disabled={
+          this.state.name.length < 5 || this.state.name === false ? true : false
+        }
         style={{
           display: this.state.ventName === true ? 'flex' : 'none',
         }}
@@ -62,12 +86,24 @@ class ConfigWizard extends React.Component {
   }
 
   render() {
+    if (this.props.isConnected === false || this.props.isConfigMode === false) {
+      return (
+        <Backdrop
+          isOpen={true}
+          text={
+            this.props.isConnected === false
+              ? 'Waiting for vent data'
+              : 'Switch vent to config mode'
+          }
+        />
+      );
+    }
     return (
       <View style={styles.wrapper}>
-        <Backdrop isOpen={this.state.backdrop} />
+        <Backdrop isOpen={this.props.isTesting === true} />
         <Text style={styles.headline}>Vent Setup</Text>
         <NameInput
-          defaultValue=""
+          defaultValue={this.props.name}
           value={this.state.name}
           editable={this.state.step === 0}
           onChange={(val) => this.setState({name: val})}
@@ -82,7 +118,7 @@ class ConfigWizard extends React.Component {
           onChange={(value) => this.setState({airFlow: Number(value)})}
           actionButton={{
             title: 'Air/1s',
-            onPress: () => this.airOneSecond(AIR_FLOW_KEY),
+            onPress: () => this.sendVentTestCmd(AIR_FLOW_KEY),
           }}
           onSave={() => this.setState({step: 2})}
           minValue={AIR_FLOW_MIN}
@@ -98,7 +134,7 @@ class ConfigWizard extends React.Component {
           onChange={(value) => this.setState({o2Flow: Number(value)})}
           actionButton={{
             title: 'O2/1s',
-            onPress: () => this.airOneSecond(O2_FLOW_KEY),
+            onPress: () => this.sendVentTestCmd(O2_FLOW_KEY),
           }}
           onSave={() => this.setState({step: 3})}
           minValue={AIR_FLOW_MIN}
@@ -114,7 +150,7 @@ class ConfigWizard extends React.Component {
           onChange={(value) => this.setState({airFlowInterval: Number(value)})}
           actionButton={{
             title: 'Air/10x',
-            onPress: () => this.airOneSecond(AIR_TEN_TIMES_FLOW_KEY),
+            onPress: () => this.sendVentTestCmd(AIR_TEN_TIMES_FLOW_KEY),
           }}
           onSave={() => this.setState({step: 4})}
           minValue={AIR_FLOW_MIN}
@@ -130,7 +166,7 @@ class ConfigWizard extends React.Component {
           onChange={(value) => this.setState({o2FlowInterval: Number(value)})}
           actionButton={{
             title: 'O2/10x',
-            onPress: () => this.airOneSecond(AIR_TEN_TIMES_FLOW_KEY),
+            onPress: () => this.sendVentTestCmd(AIR_TEN_TIMES_FLOW_KEY),
           }}
           onSave={() => this.setState({step: 5})}
           minValue={AIR_FLOW_MIN}
@@ -172,6 +208,28 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
+  indicator: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    width: 200,
+    height: 120,
+    transform: [{translateY: -60}, {translateX: -100}],
+  },
+  indicatorText: {
+    textAlign: 'center',
+  },
 });
 
-export default ConfigWizard;
+const mapStateToProps = (state) => ({
+  name: state.name,
+  mac: state.mac,
+  ip: state.ip,
+  isConfigMode: state.isConfigMode,
+  isConnected: state.isConnected,
+  isTesting: state.isTesting,
+  isSaved: state.isSaved,
+  currentWifi: state.currentWifi,
+});
+
+export default connect(mapStateToProps)(ConfigWizard);
