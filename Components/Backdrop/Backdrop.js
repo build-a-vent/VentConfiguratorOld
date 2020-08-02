@@ -11,7 +11,7 @@ import {
   ACTIVITY_INDICATOR_COLOR,
 } from '../../constants/App';
 
-const {height, width} = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 
 const Backdrop = (props) => {
   if (props.isOpen === false) {
@@ -36,10 +36,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 0,
     top: 0,
+    height: height,
     backgroundColor: 'rgba(33,37,41, .4)',
-    zIndex: 9999999,
+    zIndex: 999999999,
   },
   indicator: {
     position: 'absolute',
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
     left: '50%',
     width: 300,
     height: 120,
-    transform: [{translateY: -60}, {translateX: -150}],
+    transform: [{ translateY: -60 }, { translateX: -150 }],
     zIndex: 2,
   },
   indicatorText: {

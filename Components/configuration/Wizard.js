@@ -3,9 +3,9 @@ import {
   Text,
   StyleSheet,
   View,
-  Button,
   Keyboard,
   KeyboardAvoidingView,
+  Dimensions
 } from 'react-native';
 import NameInput from './Name';
 import FlowAdjust from './FlowAdjust';
@@ -19,13 +19,15 @@ import {
 } from '../../constants/App';
 import NetworkSetup from './NetworkSetup';
 import Finish from './Finish';
-import {VENT_SELECT_PAGE, INDEX_PAGE} from '../../constants/Navigation';
-import broadcast from '../../data/Broadcast';
-import {connect} from 'react-redux';
-import WifiManager from 'react-native-wifi-reborn';
-import {ScrollView} from 'react-native-gesture-handler';
+import { INDEX_PAGE } from '../../constants/Navigation';
+import Broadcast from '../../data/Broadcast';
+import { connect } from 'react-redux';
+import { ScrollView } from 'react-native-gesture-handler';
 
 class ConfigWizard extends React.Component {
+
+  broadcast = null;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -41,38 +43,36 @@ class ConfigWizard extends React.Component {
       storeWifi: false,
       wifiIndex: -1,
     };
-  }
-
-  componentDidMount() {
-    setTimeout(() => broadcast.reinit(), 600);
+    this.broadcast = new Broadcast();
   }
 
   componentDidUpdate() {
     if (this.props.isConnected === true && this.props.isConfigMode === false) {
-      broadcast.switchConfigMode();
+      this.broadcast.switchConfigMode()
     }
 
     if (this.props.isSaved === true) {
+      this.broadcast.close()
       this.props.navigation.navigate(INDEX_PAGE);
     }
   }
 
   sendVentTestCmd(test) {
     Keyboard.dismiss();
-    broadcast.sendTest(test);
+    this.broadcast.sendTest(test);
   }
 
   updateVent() {
     Keyboard.dismiss();
 
-    broadcast.saveVent({
-      ventname: this.state.name,
+    this.broadcast.saveVent({
+      c_name: this.state.name,
       c_flair: this.state.airFlow,
       c_flo2: this.state.o2Flow,
       c_intair: this.state.airFlowInterval,
-      c_int2t: this.state.o2FlowInterval,
-      ssid: this.state.ssid,
-      password: this.state.password,
+      c_into2: this.state.o2FlowInterval,
+      c_ssid: this.state.ssid,
+      c_passwd: this.state.password,
     });
   }
 
@@ -100,8 +100,8 @@ class ConfigWizard extends React.Component {
               defaultValue={this.props.name}
               value={this.state.name}
               editable={this.state.step === 0}
-              onChange={(val) => this.setState({name: val})}
-              onPress={() => this.setState({ventName: false, step: 1})}
+              onChange={(val) => this.setState({ name: val })}
+              onPress={() => this.setState({ ventName: false, step: 1 })}
             />
 
             <FlowAdjust
@@ -110,12 +110,12 @@ class ConfigWizard extends React.Component {
               value={this.state.airFlow}
               active={1}
               editable={this.state.step === 1}
-              onChange={(value) => this.setState({airFlow: Number(value)})}
+              onChange={(value) => this.setState({ airFlow: Number(value) })}
               actionButton={{
                 title: 'Air/1s',
                 onPress: () => this.sendVentTestCmd(AIR_FLOW_KEY),
               }}
-              onSave={() => this.setState({step: 2})}
+              onSave={() => this.setState({ step: 2 })}
               minValue={AIR_FLOW_MIN}
               maxValue={AIR_FLOW_MAX}
             />
@@ -126,12 +126,12 @@ class ConfigWizard extends React.Component {
               value={this.state.o2Flow}
               active={2}
               editable={this.state.step === 2}
-              onChange={(value) => this.setState({o2Flow: Number(value)})}
+              onChange={(value) => this.setState({ o2Flow: Number(value) })}
               actionButton={{
                 title: 'O2/1s',
                 onPress: () => this.sendVentTestCmd(O2_FLOW_KEY),
               }}
-              onSave={() => this.setState({step: 3})}
+              onSave={() => this.setState({ step: 3 })}
               minValue={AIR_FLOW_MIN}
               maxValue={AIR_FLOW_MAX}
             />
@@ -143,13 +143,13 @@ class ConfigWizard extends React.Component {
               active={3}
               editable={this.state.step === 3}
               onChange={(value) =>
-                this.setState({airFlowInterval: Number(value)})
+                this.setState({ airFlowInterval: Number(value) })
               }
               actionButton={{
                 title: 'Air/10x',
                 onPress: () => this.sendVentTestCmd(AIR_TEN_TIMES_FLOW_KEY),
               }}
-              onSave={() => this.setState({step: 4})}
+              onSave={() => this.setState({ step: 4 })}
               minValue={AIR_FLOW_MIN}
               maxValue={AIR_FLOW_MAX}
             />
@@ -161,13 +161,13 @@ class ConfigWizard extends React.Component {
               active={4}
               editable={this.state.step === 4}
               onChange={(value) =>
-                this.setState({o2FlowInterval: Number(value)})
+                this.setState({ o2FlowInterval: Number(value) })
               }
               actionButton={{
                 title: 'O2/10x',
                 onPress: () => this.sendVentTestCmd(AIR_TEN_TIMES_FLOW_KEY),
               }}
-              onSave={() => this.setState({step: 5})}
+              onSave={() => this.setState({ step: 5 })}
               minValue={AIR_FLOW_MIN}
               maxValue={AIR_FLOW_MAX}
             />
@@ -180,13 +180,19 @@ class ConfigWizard extends React.Component {
               storeWifi={this.state.storeWifi}
               wifiIndex={this.state.wifiIndex}
               onStoreChange={() =>
-                this.setState({storeWifi: !this.state.storeWifi})
+                this.setState({ storeWifi: !this.state.storeWifi })
               }
               password={this.state.password}
-              onSsidChange={(text) => this.setState({ssid: text})}
-              onPasswordChange={(text) => this.setState({password: text})}
-              onWifiSelect={(index) => this.setState({wifiIndex: index})}
-              onSave={() => this.setState({step: 6})}
+              onSsidChange={(text) => this.setState({ ssid: text })}
+              onPasswordChange={(text) => this.setState({ password: text })}
+              onWifiSelect={(data, index) => this.setState({
+                ssid: data?.ssid,
+                password: data?.password,
+                wifiIndex: index
+              })
+
+              }
+              onSave={() => this.setState({ step: 6 })}
             />
 
             <Finish
@@ -200,10 +206,10 @@ class ConfigWizard extends React.Component {
     );
   }
 }
-
+const { height, width } = Dimensions.get('window');
 const styles = StyleSheet.create({
   wrapper: {
-    height: '100%',
+    height: height,
     paddingLeft: 10,
     paddingRight: 10,
     position: 'relative',
@@ -221,7 +227,7 @@ const styles = StyleSheet.create({
     left: '50%',
     width: 200,
     height: 120,
-    transform: [{translateY: -60}, {translateX: -100}],
+    transform: [{ translateY: -60 }, { translateX: -100 }],
   },
   indicatorText: {
     textAlign: 'center',
@@ -232,6 +238,7 @@ const mapStateToProps = (state) => ({
   name: state.name,
   mac: state.mac,
   ip: state.ip,
+  valvecfg: state.valvecfg,
   isConfigMode: state.isConfigMode,
   isConnected: state.isConnected,
   isTesting: state.isTesting,

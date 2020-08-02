@@ -14,9 +14,9 @@ export const setConfigMode = (mode) => ({
 
 export const VENT_IS_TESTING = 'VENT_IS_TESTING';
 
-export const setVentTesting = (state) => ({
+export const setVentTesting = (mode) => ({
   type: VENT_IS_TESTING,
-  state,
+  mode,
 });
 
 export const VENT_IS_SAVED = 'VENT_IS_SAVED';

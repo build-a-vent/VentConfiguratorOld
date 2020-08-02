@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
-import {View, Text, StyleSheet, Button} from 'react-native';
-import {Picker} from '@react-native-community/picker';
-import {configStyles} from './styles';
-import {TextInput} from 'react-native-gesture-handler';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Button } from 'react-native';
+import { Picker } from '@react-native-community/picker';
+import { configStyles } from './styles';
+import { TextInput } from 'react-native-gesture-handler';
 import CheckBox from '@react-native-community/checkbox';
-import {connect} from 'react-redux';
+import { connect } from 'react-redux';
 
 const SaveButton = (props) => {
   if (props.editable === false) {
@@ -60,7 +60,7 @@ const FormGroup = (props) => {
       <CheckBox
         onValueChange={props.onStoreChange}
         value={props.storeWifi}
-        tintColors={{true: '#a4c936'}}
+        tintColors={{ true: '#a4c936' }}
       />
     </View>
   );
@@ -68,15 +68,15 @@ const FormGroup = (props) => {
 
 const NetworkSetup = (props) => {
   if (props.step < props.active) {
-    //return null;
+    return null;
   }
 
   return (
     <View>
       <Picker
         selectedValue={props.wifiIndex}
-        style={{height: 50, width: '100%'}}
-        onValueChange={(itemValue, itemIndex) => props.onWifiSelect(itemValue)}>
+        style={{ height: 50, width: '100%' }}
+        onValueChange={(itemValue) => props.onWifiSelect(props.storedWifi[itemValue], itemValue)}>
         <Picker.Item label="Select a known wifi" value="-1" />
         {props.storedWifi.map((network, index) => (
           <Picker.Item label={network.ssid} value={index} />
@@ -85,12 +85,12 @@ const NetworkSetup = (props) => {
       <FormGroup {...props} />
 
       <SaveButton {...props} />
-    </View>
+    </View >
   );
 };
 
 const styles = StyleSheet.create(configStyles);
 
-const mapStateToProps = (state) => ({storedWifi: state.storedWifi});
+const mapStateToProps = (state) => ({ storedWifi: state.storedWifi });
 
 export default connect(mapStateToProps)(NetworkSetup);

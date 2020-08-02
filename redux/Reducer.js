@@ -1,4 +1,4 @@
-import {SET_STORED_WIFI} from './actions/Storage';
+import { SET_STORED_WIFI } from './actions/Storage';
 import {
   VENT_DATA,
   VENT_CONFIG_MODE,
@@ -25,11 +25,12 @@ const initialState = {
   configWifi: null,
   stayCurrent: false,
   broadcastInit: false,
+  valvecfg: false
 };
 
 const Reducer = (state = initialState, action) => {
   const type = action.type;
-  console.log('reducer ===>', action);
+  //console.log('reducer ===>', action);
   switch (type) {
     case SET_STORED_WIFI:
       const storedWifi = [...state.storedWifi];
@@ -38,6 +39,12 @@ const Reducer = (state = initialState, action) => {
         ...state,
         storedWifi,
       };
+
+    case VENT_CONFIG_MODE:
+      return {
+        ...state,
+        isConfigMode: action.mode
+      }
 
     case VENT_DATA:
       return {
@@ -54,7 +61,7 @@ const Reducer = (state = initialState, action) => {
     case VENT_IS_TESTING:
       return {
         ...state,
-        isTesting: action.state,
+        isTesting: action.mode,
       };
     case SET_CURRENT_WIFI:
       return {

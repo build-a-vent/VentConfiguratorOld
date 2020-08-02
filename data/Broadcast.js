@@ -1,4 +1,4 @@
-import {NetworkInfo} from 'react-native-network-info';
+import { NetworkInfo } from 'react-native-network-info';
 import store from '../redux/Store';
 import {
   setVentData,
@@ -6,7 +6,7 @@ import {
   setVentTesting,
   setVentSaved,
 } from '../redux/actions/Vent';
-import {VENT_CONFIG_TESTS} from '../constants/App';
+import { VENT_CONFIG_TESTS } from '../constants/App';
 
 const Buffer = (global.Buffer = global.Buffer || require('buffer').Buffer);
 const dgram = require('dgram');
@@ -15,45 +15,47 @@ const socketType = 'udp4';
 const socketPort = 1111;
 
 const SCAN_CMD = 'scan';
-const SAVE_CMD = 'config';
+const STATUS_CONFIG_MODE = 'configuring';
 const STATUS_CMD = 'status';
+const STATUS_TESTING = 'valverun'
 
+const CMD_SAVE = 'config';
 const CMD_CONFIG_MODE = 'configmode';
 const CMD_TESTS = 'valvecfg';
 
 const retryTime = 100;
+const TEST_DURATION = 2000;
 
-class Broadcaster {
-  ip;
-  subnet;
+class Broadcast {
+  ip = null;
+  subnet = null;
   broadcast;
   seqPrefix;
   socket;
-  request = false;
+  broadcastSuccess = false
 
   constructor() {
     this.socket = dgram.createSocket(socketType);
-    this.getInterfaceIp().getInterfaceNet();
-  }
-
-  reinit() {
-    this.getInterfaceIp()
-      .getInterfaceNet()
-      .calculateBroadcast()
-      .sendBroadcast();
+    this.getInterfaceIp().getInterfaceNet().calculateBroadcast();
   }
 
   init() {
-    this.calculateBroadcast();
-    this.socket.once('listening', () => {});
+    this.socket.once('listening', () =>
+      this.sendBroadcast());
 
     this.socket.on('message', this.receive.bind(this));
     this.socket.bind(socketPort);
   }
+
+  close() {
+    this.socket.close(() => console.log('Socet is close and can be used again'))
+  }
+
   /**
    * sends the broadcast for all ventilators no specials needed
    */
   sendBroadcast() {
+    if (this.broadcastSuccess === true) return;
     this.request = true;
     const buffer = this.stringToBuffer(
       JSON.stringify({
@@ -75,22 +77,16 @@ class Broadcaster {
     );
 
     setTimeout(() => {
-      if (this.request === false) return;
       this.sendBroadcast();
     }, retryTime);
   }
 
   saveVent(sendData) {
     const data = store.getState();
-    sendData.cmd = SAVE_CMD;
+    sendData.cmd = CMD_SAVE;
     sendData.mac = data.mac;
 
     this.sendToVent(sendData, data.ip);
-
-    setTimeout(() => {
-      store.dispatch(setVentSaved());
-      this.request = true;
-    }, 2000);
   }
 
   sendTest(test) {
@@ -105,17 +101,11 @@ class Broadcaster {
       action: test,
     };
 
-    store.dispatch(setVentTesting(true));
+    setTimeout(() => store.dispatch(setVentTesting(true)), 0);
     this.sendToVent(sendData, data.ip);
-    setTimeout(() => {
-      console.warn('----- REMOVE ME ---------------');
-      this.request = false;
-      store.dispatch(setVentTesting(false));
-    }, 2000);
   }
 
   switchConfigMode() {
-    console.log('set vent to config mode');
     const data = store.getState();
     const sendData = {
       cmd: CMD_CONFIG_MODE,
@@ -123,14 +113,6 @@ class Broadcaster {
     };
 
     this.sendToVent(sendData, data.ip);
-
-    // TODO hack while no vent response
-
-    setTimeout(() => {
-      console.warn('----- REMOVE ME ---------------');
-      store.dispatch(setConfigMode(true));
-      this.request = true;
-    }, 2000);
   }
 
   sendToVent(data, ip) {
@@ -144,12 +126,11 @@ class Broadcaster {
   receive(msg, rinfo) {
     const data = JSON.parse(msg.toString());
     const cmd = data.cmd;
-    console.log(data);
     switch (cmd) {
       case SCAN_CMD:
         return;
       case STATUS_CMD:
-        this.request = false;
+        this.broadcastSuccess = true;
         store.dispatch(
           setVentData({
             mac: data.mac,
@@ -159,8 +140,13 @@ class Broadcaster {
           }),
         );
         break;
+      case STATUS_CONFIG_MODE:
+        store.dispatch(setConfigMode(true));
+        break;
+      case STATUS_TESTING:
+        setTimeout(() => store.dispatch(setVentTesting(false)), TEST_DURATION)
+        break;
       default:
-        console.log('------------------ no cmd ----------------------');
         console.log(data);
     }
   }
@@ -168,9 +154,8 @@ class Broadcaster {
   getInterfaceIp() {
     NetworkInfo.getIPV4Address().then((ipv4Address) => {
       this.ip = ipv4Address;
-
       if (this.broadcast) {
-        this.init();
+        this.calculateBroadcast()
       }
     });
     return this;
@@ -184,13 +169,16 @@ class Broadcaster {
     NetworkInfo.getSubnet().then((subnet) => {
       this.subnet = subnet;
       if (this.ip) {
-        this.init();
+        this.calculateBroadcast()
       }
     });
     return this;
   }
 
   calculateBroadcast() {
+    if (this.ip === null || this.subnet === null) {
+      return this;
+    }
     const addr_splitted = this.ip.split('.');
     const netmask_splitted = this.subnet.split('.');
     this.seqPrefix = addr_splitted.slice(-1)[0]; //last part of a ip is unique so we can use as prefix
@@ -202,10 +190,10 @@ class Broadcaster {
       .map((e, i) => (~netmask_splitted[i] & 0xff) | e)
       .join('.');
 
-    return this;
+    return this.init()
   }
 }
 
-const broadcast = new Broadcaster();
+//const broadcast = new Broadcaster();
 
-export default broadcast;
+export default Broadcast;

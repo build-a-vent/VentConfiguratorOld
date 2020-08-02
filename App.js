@@ -11,11 +11,11 @@ import {
   createStackNavigator,
   CardStyleInterpolators,
 } from '@react-navigation/stack';
-import {NavigationContainer} from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 
-import {View, StyleSheet} from 'react-native';
+import { View, StyleSheet } from 'react-native';
 
-import {navigationRef} from './RootNavigation';
+import { navigationRef } from './RootNavigation';
 import {
   INDEX_PAGE,
   VENT_SELECT_PAGE,
@@ -23,11 +23,10 @@ import {
 } from './constants/Navigation';
 import IndexView from './Components/index/Index';
 import Footer from './Components/footer/Footer';
-import {Provider} from 'react-redux';
+import { Provider } from 'react-redux';
 import Store from './redux/Store';
 import VentSelect from './Components/ventSelect/VentSelect';
 import ConfigWizard from './Components/configuration/Wizard';
-import './data/Broadcast';
 
 const Stack = createStackNavigator();
 
