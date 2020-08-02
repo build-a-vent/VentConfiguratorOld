@@ -9,15 +9,15 @@ import {
   Dimensions,
 } from 'react-native';
 import WifiManager from 'react-native-wifi-reborn';
-import {SSID_PREFIX, SCANNING_TEXT, CONNECT_TEXT} from '../../constants/App';
-import {VENT_INSTALL} from '../../constants/Navigation';
+import { SSID_PREFIX, SCANNING_TEXT, CONNECT_TEXT } from '../../constants/App';
+import { VENT_INSTALL } from '../../constants/Navigation';
 import Backdrop from '../Backdrop/Backdrop';
-import {connect} from 'react-redux';
-import {setCurrentWifi, setConfigWifi} from '../../redux/actions/Wifi';
-import {bindActionCreators} from 'redux';
+import { connect } from 'react-redux';
+import { setCurrentWifi, setConfigWifi } from '../../redux/actions/Wifi';
+import { bindActionCreators } from 'redux';
 import DefaultModal from '../Network/DefaultModal';
 
-const {height} = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const Item = (props) => {
   return (
@@ -54,9 +54,9 @@ class VentSelect extends React.Component {
     WifiManager.reScanAndLoadWifiList()
       .then((result) => JSON.parse(result))
       .then((data) =>
-        this.setState({wifi: data, indicator: false, activity: null}),
+        this.setState({ wifi: data, indicator: false, activity: null }),
       )
-      .catch(() => this.setState({wifi: [], indicator: false}));
+      .catch(() => this.setState({ wifi: [], indicator: false }));
   }
 
   connect(index) {
@@ -94,7 +94,7 @@ class VentSelect extends React.Component {
               display: this.state.activity === CONNECT_TEXT ? 'none' : 'flex',
             }}
             data={this.getVentNetwoks()}
-            renderItem={({item, index}) => (
+            renderItem={({ item, index }) => (
               <Item
                 title={item.SSID}
                 onPress={() => {
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     left: '50%',
     width: 200,
     height: 120,
-    transform: [{translateY: -60}, {translateX: -100}],
+    transform: [{ translateY: -60 }, { translateX: -100 }],
   },
   indicatorText: {
     textAlign: 'center',

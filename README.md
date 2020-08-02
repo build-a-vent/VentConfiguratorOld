@@ -2,11 +2,17 @@
 
 Sources for the build-a-vent configurator on Android
 
-to switch with the ESP to the config wifi, open Arduino IDE go to Tools >> Serial Monitor and rype:
+to switch with the ESP to the config wifi, open Arduino IDE go to Tools >> Serial Monitor and type:
 
 ```
 "blafasel "Passwort wificonfig
 ```
+
+to display network messages type:
+
+5000 netshowtx
+
+5000 netshowrx
 
 ## Connection
 
@@ -106,7 +112,7 @@ ventname: name
 c_flair: airFlow
 c_flo2: o2Flow
 c_intair: airFlowInterval
-c_int2t: o2FlowInterval
+c_into2: o2FlowInterval
 ssid: ssid
 password: password
 }
