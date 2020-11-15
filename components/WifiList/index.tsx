@@ -3,17 +3,27 @@ import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import React, {useEffect, useState} from 'react';
 import {Button, FlatList, Text, TouchableOpacity, View} from 'react-native';
-import {NetworkInfo} from 'react-native-network-info';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import WifiManager, {WifiEntry} from 'react-native-wifi-reborn';
+import {connect} from 'react-redux';
+import {Dispatch} from 'redux';
 import {RootStackParamList} from '../../AppNavigator';
 import {SSID_FRAGMENT} from '../../constants/app';
-import {setProgress, switchWifi} from '../../store/app/action';
+import {connectVent} from '../../helper/connectVent';
+import {
+  setConfigMode,
+  setConfigSsid,
+  setProgress,
+  switchWifi,
+} from '../../store/app/action';
 import store from '../../store/store';
 import globalStyles from '../../styles/globalStyles';
 import styles from './styles';
 
-type WifiListScreenNavProps = StackNavigationProp<RootStackParamList, 'Index'>;
+export type WifiListScreenNavProps = StackNavigationProp<
+  RootStackParamList,
+  'Index'
+>;
 
 function scanNetworks(cb: (list: WifiEntry[]) => void) {
   cb([]);
@@ -25,7 +35,7 @@ function scanNetworks(cb: (list: WifiEntry[]) => void) {
   });
 }
 
-async function ensureReachableWifi(
+export async function ensureReachableWifi(
   navigation: WifiListScreenNavProps,
   ssid: string,
 ) {
@@ -33,7 +43,9 @@ async function ensureReachableWifi(
   if (netInfo?.type === 'wifi' && netInfo.isConnected === true) {
     store.dispatch(setProgress(true, 'Connect to Vent'));
     store.dispatch(switchWifi(false));
-    navigation.navigate('Config', {ssid: 'fdfd', connect: true});
+    store.dispatch(setConfigSsid(ssid));
+    store.dispatch(setConfigMode(true));
+    navigation.navigate('Config');
     return;
   }
 
@@ -42,38 +54,21 @@ async function ensureReachableWifi(
   }, 1000);
 }
 
-function connectVent(ssid: string, navigation: WifiListScreenNavProps) {
-  NetworkInfo.getSSID().then(async (currentSSid) => {
-    if (currentSSid === ssid) {
-      navigation.navigate('Config', {ssid: currentSSid, connect: false});
-      return;
-    }
+type TProps = ReturnType<typeof mapDispatchToState>;
 
-    store.dispatch(setProgress(true, 'Connect vent wifi'));
-    store.dispatch(switchWifi(true));
-
-    const fo = await WifiManager.connectToProtectedSSID(
-      ssid,
-      ssid.substr(4),
-      true,
-    ).then(
-      () => ensureReachableWifi(navigation, ssid),
-      () => connectVent(ssid, navigation),
-    );
-    return true;
-  });
-}
-
-const WifiList: React.FunctionComponent = () => {
+const WifiList: React.FunctionComponent<TProps> = (props) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [networks, setNetworks] = useState<WifiEntry[]>([]);
   const navigation: WifiListScreenNavProps = useNavigation();
+  props.resetConfigMode();
   useEffect(() => {
     if (isLoaded === false) {
+      props.setConfigSsid();
+
       setIsLoaded(true);
       scanNetworks(setNetworks);
     }
-  }, [isLoaded, setIsLoaded]);
+  }, [isLoaded, setIsLoaded, props]);
 
   return (
     <SafeAreaView style={styles.wrapper}>
@@ -109,4 +104,9 @@ const WifiList: React.FunctionComponent = () => {
   );
 };
 
-export default WifiList;
+const mapDispatchToState = (dispatch: Dispatch) => ({
+  setConfigSsid: () => dispatch(setConfigSsid('')),
+  resetConfigMode: () => dispatch(setConfigMode(false)),
+});
+
+export default connect(null, mapDispatchToState)(WifiList);

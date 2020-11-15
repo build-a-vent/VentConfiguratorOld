@@ -7,7 +7,7 @@ export type AppScreens = 'Index';
 
 export type RootStackParamList = {
   Index: undefined;
-  Config: {ssid: string; connect: boolean};
+  Config: undefined;
 };
 const NavStack = createStackNavigator<RootStackParamList>();
 const AppNavigator: React.FunctionComponent = () => {

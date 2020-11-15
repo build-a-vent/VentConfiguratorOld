@@ -19,12 +19,27 @@ import EnableWifi from './components/EnableWifi';
 import Progress from './components/Progress';
 import {WIFI_CONNECTION} from './constants/app';
 import {Colors} from './constants/styles';
-import {setProgress, setWifiAppState} from './store/app/action';
+import {setProgress, setSsid, setWifiAppState} from './store/app/action';
 import store from './store/store';
 
 NetInfo.addEventListener((state: NetInfoState) => {
-  if (store.getState().app.switchWifi === true) return;
+  store.dispatch(setSsid(state?.details?.ssid ?? ''));
+  const appData = store.getState().app;
 
+  if (
+    appData.isConfig === true &&
+    appData.configSsid !== state?.details?.ssid
+  ) {
+    store.dispatch(
+      setProgress(true, 'The vent wifi is lost go back ans tart again'),
+    );
+    setTimeout(() => {
+      store.dispatch(setProgress(false, null));
+    }, 5000);
+
+    return;
+  }
+  if (appData.switchWifi === true || appData.isConfig === true) return;
   store.dispatch(setProgress(false, null));
   store.dispatch(setWifiAppState(state.type === WIFI_CONNECTION));
 });

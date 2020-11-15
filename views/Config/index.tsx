@@ -14,7 +14,7 @@ import {
 } from '../../constants/config';
 import {closeSocket, createSocket, socketSend} from '../../Network/Socket';
 import {TResponseBroadcast, TValveConfigAction} from '../../Network/Socket.d';
-import {setProgress} from '../../store/app/action';
+import {setConfigMode, setProgress} from '../../store/app/action';
 import globalStyles from '../../styles/globalStyles';
 import styles from './styles';
 
@@ -89,7 +89,6 @@ function reducer(state: TState, action: TAction): TState {
 
 const Config: React.FunctionComponent<MyProps> = (props) => {
   const navigation: TWifiListScreenNavProps = useNavigation();
-
   const [state, dispatch] = useReducer(reducer, initialState);
   const [init, setInit] = useState(false);
 
@@ -159,6 +158,7 @@ const Config: React.FunctionComponent<MyProps> = (props) => {
   );
   useEffect(() => {
     if (init === false) {
+      props.setConfigMode();
       sendBroadcast();
       setInit(true);
     }
@@ -211,6 +211,7 @@ const mapDispatchToConfigProps = (dispatch: Dispatch) => ({
   setProgress: (open: boolean, message: string) => {
     dispatch(setProgress(open, message));
   },
+  setConfigMode: () => dispatch(setConfigMode(true)),
 });
 
 export default connect(null, mapDispatchToConfigProps)(Config);

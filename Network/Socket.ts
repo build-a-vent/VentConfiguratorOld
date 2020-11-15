@@ -17,7 +17,7 @@ export function socketSend(data: TBroadcastMessages): Promise<any> {
       reject(new Error('socket is null'));
       return;
     }
-    let timerId: NodeJS.Timeout | null = null;
+    let timerId: NodeJS.Timeout;
     // event to receive messages
     socket.on('message', messageCallback);
     // resolve by message and destroy socket event
@@ -48,7 +48,6 @@ export function socketSend(data: TBroadcastMessages): Promise<any> {
 
     // udp is stateless so try again after 300ms
     timerId = setTimeout(async () => {
-      console.log('Retry cmd', data);
       if (socket === null) return;
       socket.off('message', messageCallback);
       socketSend(data)
@@ -81,5 +80,4 @@ export const closeSocket = () => {
   target = '255.255.255.255';
   socket.close();
   socket = null;
-  console.log('socket closed');
 };
